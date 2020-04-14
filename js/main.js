@@ -22,22 +22,18 @@ const fetchData = async () => {
 
         // We update the datas only if they've changed.
         if(lastUpdate !== data.lastUpdate) {
-            // Updating the last update time.
-            sessionStorage.setItem(TOKENS.LAST_UPDATE, data.lastUpdate);
-
+            
             // Getting the latest updates.
-            const recoveredResponse = await fetch(`${MATHROD_API}/recovered`);
             const dailyResponse     = await fetch(`${MATHROD_API}/daily`);
             const countriesResponse = await fetch(`${MATHROD_API}/countries`);
             const locationsResponse = await fetch(`${API}/locations`);
 
-            const recoveredData = await recoveredResponse.json();
             const dailyData     = await dailyResponse.json();
             const countriesData = await countriesResponse.json();
             const locationsData = await locationsResponse.json();
 
             // Saving updates to the storage.
-            sessionStorage.setItem(TOKENS.RECOVERED,  JSON.stringify(recoveredData));
+            sessionStorage.setItem(TOKENS.RECOVERED,  JSON.stringify(data));
             sessionStorage.setItem(TOKENS.DAILY,      JSON.stringify(dailyData));
             sessionStorage.setItem(TOKENS.COUNTRIES,  JSON.stringify(countriesData));
             sessionStorage.setItem(TOKENS.LOCATIONS,  JSON.stringify(locationsData));
@@ -45,9 +41,14 @@ const fetchData = async () => {
             // Deleting the cached html table rows and the chart data.
             sessionStorage.removeItem(TOKENS.LOCATION_TAB);
             sessionStorage.removeItem(TOKENS.CHART_DATA);
+
+            // Updating the last update time.
+            sessionStorage.setItem(TOKENS.LAST_UPDATE, data.lastUpdate);
         }
 
     } catch(ex) {
+        sessionStorage.removeItem(TOKENS.LAST_UPDATE);
+        console.log(ex);
         document.write("<p><strong>Une erreur est survenue</strong></p>");
     }
 }
@@ -63,24 +64,21 @@ const applyUpdates = () => {
             _totalHealed = document.querySelector('#total-healed'),
             _tableData   = document.querySelector('#countries-data');
 
-    const { latest, locations } = JSON.parse(sessionStorage.getItem(TOKENS.LOCATIONS));
-    const recoveries = JSON.parse(sessionStorage.getItem(TOKENS.RECOVERED));
+    const { locations } = JSON.parse(sessionStorage.getItem(TOKENS.LOCATIONS));
+    const { recovered, confirmed, deaths } = JSON.parse(sessionStorage.getItem(TOKENS.RECOVERED));
 
-    _totalCases.textContent  = latest.confirmed;
-    _totalDeaths.textContent = latest.deaths;
-
-    let totalRecovered = 0;
-    recoveries.map(({ recovered }) => totalRecovered += recovered);
-    _totalHealed.textContent = totalRecovered;
+    _totalCases.textContent  = confirmed.value;
+    _totalDeaths.textContent = deaths.value;
+    _totalHealed.textContent = recovered.value;
 
     let cachedTable = sessionStorage.getItem(TOKENS.LOCATION_TAB);
     if(!cachedTable) {
         let line = `
             <tr>
                 <td>World</td>
-                <td>${latest.confirmed}</td>
-                <td>${latest.deaths}</td>
-                <td>${totalRecovered}</td>
+                <td>${confirmed.value}</td>
+                <td>${deaths.value}</td>
+                <td>${recovered.value}</td>
                 <td>world</td>
             </tr>
         `;
