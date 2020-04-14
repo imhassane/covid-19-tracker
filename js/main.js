@@ -3,7 +3,9 @@ const TOKENS = {
     DAILY:       'x-covid-tracker-daily',
     COUNTRIES:   'x-covid-tracker-countries',
     LOCATIONS:   'x-covid-tracker-location',
-    LOCATION_TAB:'x-covid-tracker-location-tab'
+    LOCATION_TAB:'x-covid-tracker-location-tab',
+    CHART_DATA:  'x-covid-tracker-chart-data',
+    RECOVERED:   'x-covid-tracker-recovered'
 };
 
 const fetchData = async () => {
@@ -11,39 +13,42 @@ const fetchData = async () => {
         const API           = "https://coronavirus-tracker-api.herokuapp.com/v2";
         const MATHROD_API   = "https://covid19.mathdro.id/api";
 
-        const lastUpdate = localStorage.getItem(TOKENS.LAST_UPDATE);
+        const lastUpdate = sessionStorage.getItem(TOKENS.LAST_UPDATE);
 
         // Implementing the small cache system.
         const response  = await fetch(MATHROD_API);
         const data      = await response.json();
-        localStorage.setItem(TOKENS.LAST_UPDATE, data.lastUpdate);
+        sessionStorage.setItem(TOKENS.LAST_UPDATE, data.lastUpdate);
 
         // We update the datas only if they've changed.
         if(lastUpdate !== data.lastUpdate) {
             // Updating the last update time.
-            localStorage.setItem(TOKENS.LAST_UPDATE, data.lastUpdate);
+            sessionStorage.setItem(TOKENS.LAST_UPDATE, data.lastUpdate);
 
             // Getting the latest updates.
+            const recoveredResponse = await fetch(`${MATHROD_API}/recovered`);
             const dailyResponse     = await fetch(`${MATHROD_API}/daily`);
             const countriesResponse = await fetch(`${MATHROD_API}/countries`);
             const locationsResponse = await fetch(`${API}/locations`);
 
+            const recoveredData = await recoveredResponse.json();
             const dailyData     = await dailyResponse.json();
             const countriesData = await countriesResponse.json();
             const locationsData = await locationsResponse.json();
 
             // Saving updates to the storage.
-            localStorage.setItem(TOKENS.DAILY,      JSON.stringify(dailyData));
-            localStorage.setItem(TOKENS.COUNTRIES,  JSON.stringify(countriesData));
-            localStorage.setItem(TOKENS.LOCATIONS,  JSON.stringify(locationsData));
+            sessionStorage.setItem(TOKENS.RECOVERED,  JSON.stringify(recoveredData));
+            sessionStorage.setItem(TOKENS.DAILY,      JSON.stringify(dailyData));
+            sessionStorage.setItem(TOKENS.COUNTRIES,  JSON.stringify(countriesData));
+            sessionStorage.setItem(TOKENS.LOCATIONS,  JSON.stringify(locationsData));
             
-            // Deleting the cached html table rows.
-            localStorage.removeItem(TOKENS.LOCATION_TAB);
+            // Deleting the cached html table rows and the chart data.
+            sessionStorage.removeItem(TOKENS.LOCATION_TAB);
+            sessionStorage.removeItem(TOKENS.CHART_DATA);
         }
 
     } catch(ex) {
-        alert("erreur");
-        console.log(ex);
+        document.write("<p><strong>Une erreur est survenue</strong></p>");
     }
 }
 
@@ -53,13 +58,17 @@ const applyUpdates = () => {
             _totalHealed = document.querySelector('#total-healed'),
             _tableData   = document.querySelector('#countries-data');
 
-    const { latest, locations } = JSON.parse(localStorage.getItem(TOKENS.LOCATIONS));
-    
+    const { latest, locations } = JSON.parse(sessionStorage.getItem(TOKENS.LOCATIONS));
+    const recoveries = JSON.parse(sessionStorage.getItem(TOKENS.RECOVERED));
+
     _totalCases.textContent  = latest.confirmed;
     _totalDeaths.textContent = latest.deaths;
-    _totalHealed.textContent = latest.recovered;
 
-    let cachedTable = localStorage.getItem(TOKENS.LOCATION_TAB);
+    let totalRecovered = 0;
+    recoveries.map(({ recovered }) => totalRecovered += recovered);
+    _totalHealed.textContent = totalRecovered;
+
+    let cachedTable = sessionStorage.getItem(TOKENS.LOCATION_TAB);
     if(!cachedTable) {
         let line = `
             <tr>
@@ -93,20 +102,13 @@ const applyUpdates = () => {
                 ${line}
             </tbody>
         `;
-        localStorage.setItem(TOKENS.LOCATION_TAB, cachedTable);
+        sessionStorage.setItem(TOKENS.LOCATION_TAB, cachedTable);
     }
     _tableData.innerHTML = cachedTable;
 
 }
 
 const displayChart = (chart, data) => new Chart(chart, {
-    options: {
-        scales: {
-            yAxes: [{
-                stacked: true
-            }]
-        }
-    },
     type: 'line',
     data
 });
@@ -123,17 +125,45 @@ window.addEventListener('load', async () => {
     // Disable automatic style injection
     Chart.platform.disableCSSInjection = true;
 
-    let data = {
-        labels: ["December", "January", "February", "March", "April"],
-        datasets: [
-            {
-                label: "Per month",
-                data: [300, 2000, 150000, 900000, 2000000]
-            }
-        ]
+    // If the was cached we fetch it
+    let data = JSON.parse(sessionStorage.getItem(TOKENS.CHART_DATA));
+
+    // else we set a default data.
+    if(!data) {
+        data = {
+            labels: ["December", "January", "February", "March", "April"],
+            datasets: [
+                {
+                    label: "Per month",
+                    data: [300, 2000, 150000, 900000, 2000000]
+                }
+            ]
+        }
     }
     displayChart(_chart, data);
     await fetchData();
     applyUpdates();
-    displayChart(_chart, data);
+
+    // If the chart wasn't cached, we create its data and display it.
+    if(!sessionStorage.getItem(TOKENS.CHART_DATA)) {
+        // Updating the chart datas.
+        const daily = JSON.parse(sessionStorage.getItem(TOKENS.DAILY));
+        
+        // Building the chart values.
+        let labels = [], confirmed = [], deaths = [];
+        for(let d of daily) {
+            labels.push(d.reportDate);
+            confirmed.push(d.confirmed.total);
+            deaths.push(d.deaths.total);
+        }
+        data = {
+            labels,
+            datasets: [
+                { label: "confirmed cases", data: confirmed, fill: true },
+                { label: "deaths", data: deaths, fill: true, borderColor: 'red', backgroundColor: 'rgb(255, 0, 0, 0.5)' }
+            ]
+        };
+        sessionStorage.setItem(TOKENS.CHART_DATA, JSON.stringify(data));
+        displayChart(_chart, data);
+    }
 });
