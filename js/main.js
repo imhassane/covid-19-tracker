@@ -48,7 +48,6 @@ const fetchData = async () => {
 
     } catch(ex) {
         sessionStorage.removeItem(TOKENS.LAST_UPDATE);
-        console.log(ex);
         document.write("<p><strong>Une erreur est survenue</strong></p>");
     }
 }
