@@ -52,6 +52,11 @@ const fetchData = async () => {
     }
 }
 
+/**
+ * This function will apply all the updates in the DOM.
+ * It will get datas from the session storage and
+ * will display it.
+ */
 const applyUpdates = () => {
     const   _totalCases  = document.querySelector('#total-cases'),
             _totalDeaths = document.querySelector('#total-deaths'),
@@ -75,7 +80,7 @@ const applyUpdates = () => {
                 <td>World</td>
                 <td>${latest.confirmed}</td>
                 <td>${latest.deaths}</td>
-                <td>${latest.recovered}</td>
+                <td>${totalRecovered}</td>
                 <td>world</td>
             </tr>
         `;
@@ -104,6 +109,7 @@ const applyUpdates = () => {
         `;
         sessionStorage.setItem(TOKENS.LOCATION_TAB, cachedTable);
     }
+    // Adding the elements on the DOM.
     _tableData.innerHTML = cachedTable;
 
 }
@@ -117,6 +123,7 @@ window.addEventListener('load', async () => {
 
     const _graph = document.querySelector('#graph');
 
+    // Dynamically creating the canvas where the chart will be displayed.
     const _chart = document.createElement('canvas');
     _chart.width = 360;
     _chart.height = 250;
@@ -140,7 +147,11 @@ window.addEventListener('load', async () => {
             ]
         }
     }
+
+    // Displaying a default chart like a placeholder.
     displayChart(_chart, data);
+
+    // Fetching the datas if necessery and updating the DOM.
     await fetchData();
     applyUpdates();
 
