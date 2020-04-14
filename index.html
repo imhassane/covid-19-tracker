@@ -13,21 +13,17 @@
         <hr />
         <main>
             <div id="current-stats">
-                <div class="card" id="total">
+                <div class="card">
                     <span class="label">Total cases</span>
-                    <span class="value">2 000 000</span>
+                    <span id="total-cases" class="value">2 000 000</span>
                 </div>
-                <div class="card" id="new-cases">
-                    <span class="label">New cases</span>
-                    <span class="value">50 000</span>
+                <div class="card">
+                    <span class="label">Recovered</span>
+                    <span id="total-healed" class="value">300000</span>
                 </div>
-                <div class="card" id="total-healed">
-                    <span class="label">Healed</span>
-                    <span class="value">300000</span>
-                </div>
-                <div class="card" id="total-deaths">
+                <div class="card">
                     <span class="label">Total deaths</span>
-                    <span class="value">120000</span>
+                    <span id="total-deaths" class="value">120000</span>
                 </div>
             </div>
             <div id="graph"></div>
@@ -41,38 +37,31 @@
                         <small>Over 250 countries around the world are now touched by the pandemic</small>
                     </p>
                 </div>
-                <table>
+                <table id="countries-data">
                     <thead>
                         <th>Name</th>
                         <th>Total</th>
-                        <th>New</th>
                         <th>Deaths</th>
-                        <th>New deaths</th>
                         <th>Recovered</th>
+                        <th>Code</th>
                     </thead>
                     <tbody>
                         <tr>
                             <td>World</td>
                             <td>2000000</td>
                             <td>2500</td>
-                            <td>120000</td>
-                            <td>140</td>
                             <td>700000</td>
                         </tr>
                         <tr>
                             <td>USA</td>
                             <td>500000</td>
                             <td>800</td>
-                            <td>30000</td>
-                            <td>20</td>
                             <td>100000</td>
                         </tr>
                         <tr>
                             <td>Spain</td>
                             <td>120000</td>
                             <td>200</td>
-                            <td>40000</td>
-                            <td>14</td>
                             <td>80000</td>
                         </tr>
                     </tbody>
