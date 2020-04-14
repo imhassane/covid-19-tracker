@@ -1,0 +1,82 @@
+@import url("https://fonts.googleapis.com/css?family=Poppins&display=swap");
+* {
+  font-family: 'Poppins', serif;
+  margin: 0;
+  padding: 0;
+  text-transform: uppercase;
+  overflow-x: hidden;
+}
+
+hr {
+  border: none;
+  border-bottom: 1px solid silver;
+}
+
+header {
+  padding: 10px 0;
+  text-align: center;
+}
+
+main {
+  max-width: 800px;
+  min-height: 90vh;
+  margin: 10px auto;
+}
+
+main #current-stats {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (minmax(180px, 1fr))[auto-fit];
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-gap: 2px;
+  margin: 10px 0;
+}
+
+main #current-stats .card {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid silver;
+  border-radius: 3px;
+}
+
+main #current-stats .card span {
+  display: block;
+}
+
+main #countries {
+  margin: 20px 0;
+}
+
+main #countries div {
+  margin: 10px auto;
+}
+
+main #countries div h2 {
+  text-align: center;
+}
+
+main #countries div p {
+  text-align: center;
+}
+
+main #countries table {
+  font-size: small;
+  border-collapse: collapse;
+  text-align: center;
+  width: 100%;
+}
+
+main #countries table th {
+  border: 1px solid silver;
+  padding: 1px;
+}
+
+main #countries table tr, main #countries table td {
+  border: 1px solid silver;
+}
+
+footer {
+  padding: 10px 0;
+  text-align: center;
+}
+/*# sourceMappingURL=main.css.map */
